@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Header from "./componentes/icons/Header"
 import TodoComputed from "./componentes/icons/TodoComputed"
 import TodoCreate from "./componentes/icons/TodoCreate"
@@ -6,15 +6,32 @@ import TodoFilter from "./componentes/icons/TodoFilter"
 import TodoList from "./componentes/icons/TodoList"
 
 
-const iniciarTodos=[
+const iniciarTodos=JSON.parse(localStorage.getItem("todos")) || 
+[
   {id:1, title:"go to the gym", completed:false},
   {id:2, title:"Learning english", completed:false},
   {id:3, title:"completed tutorial",completed:false},
   {id:4, title:"watched barbie the movie", completed:false},
   {id:5, title: "cook hotcakes", completed:true}
-]
+];
+
 function App() {
   const [todos, setTodos]=useState(iniciarTodos);
+  useEffect(() => localStorage.setItem("todos", JSON.stringify(todos)), [todos]);
+  const[filter,setFilter]=useState("all");
+  const filteredTodos=()=>{
+    switch(filter){
+      case("all"):
+        return todos;
+      case("active"):
+        return todos.filter((todos)=>!todos.completed)
+      case("completed"):
+        return todos.filter((todos)=>todos.completed)
+      default:
+        return todos;
+    }
+  }
+  const changeFilter=(filter)=>setFilter(filter);
 
   const createTodos=(title)=>{
     const newTodo={
@@ -33,7 +50,10 @@ function App() {
   const updateTodo=(id)=>{
     setTodos(todos.map((todo)=> todo.id===id? {...todo, completed: !todo.completed}: todo));
   }
-  const computedItemsLeft= todos.filter((todo)=> !todo.completed).length;
+  const getComputedItemsLeft = () => {
+    return todos.filter((todo) => !todo.completed).length;
+  };
+  
 
   const clearCompleted=()=>{
     setTodos(todos.filter((todo)=> !todo.completed));
@@ -41,14 +61,18 @@ function App() {
 
   return (
     <>
-    <div className=" min-h-screen bg-contain bg-[url('./assets/images/bg-mobile-light.jpg')] bg-no-repeat  bg-gray-300  ">
+    <div className=" dark:bg-gray-900 min-h-screen bg-contain bg-[url('./assets/images/bg-mobile-light.jpg')]
+    dark:bg-[url('./assets/images/bg-mobile-dark.jpg')] bg-no-repeat transition-all duration-1000 bg-gray-300  ">
       <Header/>
       
       <main className="container mx-auto px-4 mt-8 ">
         <TodoCreate createTodos={createTodos}/>
-        <TodoList todos={todos} removeTodo={removeTodo} updateTodo={updateTodo}/>
-        <TodoComputed computedItemsLeft={computedItemsLeft} clearCompleted={clearCompleted} todos={todos}/>
-        <TodoFilter/>
+        <TodoList todos={filteredTodos()} removeTodo={removeTodo} updateTodo={updateTodo}/>
+        <TodoComputed
+        getComputedItemsLeft={getComputedItemsLeft}
+        clearCompleted={clearCompleted}
+        />
+        <TodoFilter changeFilter={changeFilter} filter={filter}/>
           
       </main>
 
