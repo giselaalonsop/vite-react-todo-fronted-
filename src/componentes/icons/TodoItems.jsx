@@ -1,12 +1,14 @@
 import Check from "./check";
 import Cross from "./cross";
+import React from "react";
 
-const TodoItems = ({todo, removeTodo, updateTodo,}) => { 
+
+const TodoItems = React.forwardRef(({todo, removeTodo, updateTodo, ...props},ref) => { 
     const {id, title, completed}=todo
     
     return(
         <>
-            <article className="flex gap-4 py-4 border-b-gray-400 border-b px-4 ">
+            <article {...props} ref={ref} className="flex gap-4 py-4 border-b-gray-400 border-b px-4 ">
                     {/* <button className="inline-block  h-5 w-5 rounded-full border-2 flex-none "></button> */}
                     <button className={`${
                         completed? 
@@ -29,5 +31,5 @@ const TodoItems = ({todo, removeTodo, updateTodo,}) => {
             </article>
         </>
     )
-}
+})
 export default TodoItems;

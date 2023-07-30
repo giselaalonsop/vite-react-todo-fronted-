@@ -1,3 +1,4 @@
+import { DragDropContext,Droppable, Draggable } from "@hello-pangea/dnd";
 import { useEffect, useState } from "react"
 import Header from "./componentes/icons/Header"
 import TodoComputed from "./componentes/icons/TodoComputed"
@@ -8,12 +9,19 @@ import TodoList from "./componentes/icons/TodoList"
 
 const iniciarTodos=JSON.parse(localStorage.getItem("todos")) || 
 [
-  {id:1, title:"go to the gym", completed:false},
-  {id:2, title:"Learning english", completed:false},
-  {id:3, title:"completed tutorial",completed:false},
-  {id:4, title:"watched barbie the movie", completed:false},
-  {id:5, title: "cook hotcakes", completed:true}
+  {id:1, title:"Go to the gym", completed:false},
+  {id:2, title:"Learn React", completed:false},
+  {id:3, title:"Play to guitar",completed:false},
+  {id:4, title:"Sleep twenty minutes", completed:false},
+  {id:5, title: "Cook hotcakes", completed:true}
 ];
+const reorder = (list, startIndex, endIndex) => {
+  const result = [...list];
+  const [removed] = result.splice(startIndex, 1);
+  result.splice(endIndex, 0, removed);
+
+  return result;
+};
 
 function App() {
   const [todos, setTodos]=useState(iniciarTodos);
@@ -58,6 +66,20 @@ function App() {
   const clearCompleted=()=>{
     setTodos(todos.filter((todo)=> !todo.completed));
   }
+  
+  const handleDragEnd = (result) => {
+    const { destination, source } = result;
+    if (!destination) return;
+    if (
+        source.index === destination.index &&
+        source.droppableId === destination.droppableId
+    )
+        return;
+
+    setTodos((prevTasks) =>
+        reorder(prevTasks, source.index, destination.index)
+    );
+  }
 
   return (
     <>
@@ -69,7 +91,9 @@ function App() {
       
       <main className="container mx-auto px-4 mt-8 md:max-w-xl ">
         <TodoCreate createTodos={createTodos}/>
-        <TodoList todos={filteredTodos()} removeTodo={removeTodo} updateTodo={updateTodo}/>
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <TodoList todos={filteredTodos()} removeTodo={removeTodo} updateTodo={updateTodo} setTodos={setTodos}/>
+        </DragDropContext>
         <TodoComputed
         getComputedItemsLeft={getComputedItemsLeft}
         clearCompleted={clearCompleted}
